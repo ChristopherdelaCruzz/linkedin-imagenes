@@ -1,0 +1,27 @@
+name: Subir imagen a Typefully
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_path:
+        description: "Ruta de la imagen dentro del repositorio (ej. posts/2026-11-18-tema.png)"
+        required: true
+      upload_url:
+        description: "URL de subida prefirmada que devuelve Typefully"
+        required: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Subir imagen
+        env:
+          IMG: ${{ inputs.image_path }}
+          URL: ${{ inputs.upload_url }}
+        run: |
+          echo "::add-mask::$URL"
+          test -f "$IMG"
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -T "$IMG" "$URL")
+          echo "HTTP $code"
+          test "$code" = "200" -o "$code" = "204"
